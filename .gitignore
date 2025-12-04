@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Environment variables
+.env
+.env.local
+backend/.env
+
+# Build files
+.next/
+frontend/.next/
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+
+# IDE
+.vscode/
+.idea/
+
+# Testing
+coverage/
