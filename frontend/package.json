@@ -2,16 +2,15 @@
   "name": "premium-portfolio",
   "version": "1.0.0",
   "description": "Premium SEO-optimized portfolio with admin panel",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "server": "cd backend && npm start",
-    "server:dev": "cd backend && npm run dev",
-    "install:all": "npm install && cd backend && npm install && cd ..",
-    "dev:all": "concurrently \"npm run dev\" \"npm run server:dev\"",
-    "setup": "chmod +x setup.sh && ./setup.sh"
+    "lint": "next lint"
   },
   "dependencies": {
     "next": "^14.0.4",

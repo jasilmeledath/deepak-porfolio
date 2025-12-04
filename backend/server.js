@@ -43,12 +43,16 @@ mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('✅ MongoDB Connected'))
-.catch(err => console.error('❌ MongoDB Connection Error:', err));
-
-// Initialize default admin user and config
-const initializeDefaults = require('./utils/initDefaults');
-initializeDefaults();
+.then(() => {
+  console.log('✅ MongoDB Connected');
+  // Initialize default admin user and config after DB connection
+  const initializeDefaults = require('./utils/initDefaults');
+  initializeDefaults();
+})
+.catch(err => {
+  console.error('❌ MongoDB Connection Error:', err);
+  process.exit(1); // Exit if database connection fails
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -74,11 +78,12 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV}`);
+  console.log(`🌐 CORS Origin: ${process.env.CORS_ORIGIN}`);
 });
 
 module.exports = app;
