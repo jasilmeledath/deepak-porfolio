@@ -81,7 +81,7 @@ export default function BlogManager() {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
       const token = localStorage.getItem('adminToken');
-      
+
       await axios.delete(`${apiUrl}/blog/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -97,8 +97,8 @@ export default function BlogManager() {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
       const token = localStorage.getItem('adminToken');
-      
-      await axios.put(`${apiUrl}/blog/${post._id}`, 
+
+      await axios.put(`${apiUrl}/blog/${post._id}`,
         { isActive: !post.isActive },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -109,16 +109,32 @@ export default function BlogManager() {
     }
   };
 
+  const togglePin = async (post) => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const token = localStorage.getItem('adminToken');
+
+      await axios.put(`${apiUrl}/blog/${post._id}`,
+        { isPinned: !post.isPinned },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setMessage({ type: 'success', text: `Post ${!post.isPinned ? 'pinned' : 'unpinned'} successfully!` });
+      fetchPosts();
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Pin update failed' });
+    }
+  };
+
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6 font-mono">Blog Posts</h2>
-      
+
       {message.text && (
-        <div className={`mb-4 p-3 rounded-lg ${
-          message.type === 'success' 
+        <div className={`mb-4 p-3 rounded-lg ${message.type === 'success'
             ? 'bg-green-500/10 border border-green-500/20 text-green-400'
             : 'bg-red-500/10 border border-red-500/20 text-red-400'
-        }`}>
+          }`}>
           {message.text}
         </div>
       )}
@@ -128,7 +144,7 @@ export default function BlogManager() {
         <h3 className="text-lg font-semibold mb-4">
           {editingPost ? 'Edit Post' : 'Add New Post'}
         </h3>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-2">Title</label>
@@ -197,18 +213,25 @@ export default function BlogManager() {
       {/* Posts List */}
       <div className="space-y-3">
         <h3 className="text-lg font-semibold mb-4">All Posts ({posts.length})</h3>
-        
+
         {posts.length === 0 ? (
           <p className="text-gray-400 text-center py-8">No blog posts yet. Add your first one above!</p>
         ) : (
           posts.map((post) => (
-            <div 
+            <div
               key={post._id}
               className="bg-white/5 p-4 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4"
             >
               <div className="flex-1">
-                <h4 className="font-semibold mb-1">{post.title}</h4>
-                <a 
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-semibold">{post.title}</h4>
+                  {post.isPinned && (
+                    <span className="text-xs px-2 py-1 rounded bg-amber-500/20 text-amber-400 font-medium flex items-center gap-1">
+                      📌 PINNED
+                    </span>
+                  )}
+                </div>
+                <a
                   href={post.url}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -219,14 +242,23 @@ export default function BlogManager() {
                 <p className="text-xs text-gray-500 mt-1">
                   Published: {new Date(post.publishedAt).toLocaleDateString()}
                 </p>
-                <span className={`text-xs px-2 py-1 rounded inline-block mt-2 ${
-                  post.isActive ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
-                }`}>
+                <span className={`text-xs px-2 py-1 rounded inline-block mt-2 ${post.isActive ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
+                  }`}>
                   {post.isActive ? 'Active' : 'Inactive'}
                 </span>
               </div>
-              
+
               <div className="flex gap-2">
+                <button
+                  onClick={() => togglePin(post)}
+                  className={`px-3 py-2 rounded text-sm transition-colors ${post.isPinned
+                      ? 'bg-amber-500/30 hover:bg-amber-500/40 text-amber-300'
+                      : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-400'
+                    }`}
+                  title={post.isPinned ? 'Unpin post' : 'Pin to top'}
+                >
+                  {post.isPinned ? '📌 Unpin' : '📌 Pin'}
+                </button>
                 <button
                   onClick={() => toggleActive(post)}
                   className="px-3 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 rounded text-sm transition-colors"

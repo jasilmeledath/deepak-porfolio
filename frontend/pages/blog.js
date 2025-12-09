@@ -6,6 +6,21 @@ import axios from 'axios';
 import Link from 'next/link';
 
 export default function Blog({ blogPosts, siteConfig }) {
+  const [sortOrder, setSortOrder] = useState('newest');
+
+  // Sort posts while keeping pinned posts at the top
+  const sortedPosts = [...(blogPosts || [])].sort((a, b) => {
+    // Pinned posts always come first
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+
+    // Among pinned or non-pinned posts, sort by date
+    const dateA = new Date(a.publishedAt);
+    const dateB = new Date(b.publishedAt);
+
+    return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+  });
+
   return (
     <>
       <SEO
@@ -14,7 +29,7 @@ export default function Blog({ blogPosts, siteConfig }) {
         keywords="cybersecurity blog, threat analysis, SOC insights, security articles"
         ogType="website"
       />
-      
+
       <main className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -27,7 +42,24 @@ export default function Blog({ blogPosts, siteConfig }) {
             <Link href="/" className="text-gray-400 hover:text-white transition-colors mb-4 inline-block">
               ← Back to Home
             </Link>
-            <h1 className="text-5xl font-bold mb-4 font-mono">Blog</h1>
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-5xl font-bold font-mono">Blog</h1>
+
+              {/* Sort Control */}
+              {blogPosts && blogPosts.length > 1 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-400">Sort:</span>
+                  <select
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value)}
+                    className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-blue-500 transition-colors cursor-pointer hover:bg-white/10"
+                  >
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                  </select>
+                </div>
+              )}
+            </div>
             <p className="text-gray-400 text-lg">
               Insights on cybersecurity, threat hunting, and defensive strategies.
             </p>
@@ -35,8 +67,8 @@ export default function Blog({ blogPosts, siteConfig }) {
 
           {/* Blog Posts List */}
           <div className="space-y-6">
-            {blogPosts && blogPosts.length > 0 ? (
-              blogPosts.map((post, index) => (
+            {sortedPosts && sortedPosts.length > 0 ? (
+              sortedPosts.map((post, index) => (
                 <motion.article
                   key={post._id}
                   initial={{ opacity: 0, y: 20 }}
@@ -50,9 +82,16 @@ export default function Blog({ blogPosts, siteConfig }) {
                     rel="noopener noreferrer"
                     className="block"
                   >
-                    <h2 className="text-2xl font-semibold mb-3 group-hover:text-blue-400 transition-colors">
-                      {post.title}
-                    </h2>
+                    <div className="flex items-center gap-2 mb-3">
+                      <h2 className="text-2xl font-semibold group-hover:text-blue-400 transition-colors">
+                        {post.title}
+                      </h2>
+                      {post.isPinned && (
+                        <span className="text-amber-400 text-sm" title="Pinned post">
+                          📌
+                        </span>
+                      )}
+                    </div>
                     {post.description && (
                       <p className="text-gray-400 mb-4">{post.description}</p>
                     )}
@@ -97,7 +136,7 @@ export async function getServerSideProps() {
       axios.get(`${apiUrl}/blog`),
       axios.get(`${apiUrl}/config`)
     ]);
-    
+
     return {
       props: {
         blogPosts: postsResponse.data || [],
