@@ -10,8 +10,8 @@ const auth = require('../middleware/auth');
 router.get('/', async (req, res) => {
   try {
     const posts = await BlogPost.find({ isActive: true })
-      .sort({ publishedAt: -1 });
-    
+      .sort({ isPinned: -1, publishedAt: -1 });
+
     res.json(posts);
   } catch (err) {
     console.error(err.message);
@@ -25,8 +25,8 @@ router.get('/', async (req, res) => {
 router.get('/all', auth, async (req, res) => {
   try {
     const posts = await BlogPost.find()
-      .sort({ publishedAt: -1 });
-    
+      .sort({ isPinned: -1, publishedAt: -1 });
+
     res.json(posts);
   } catch (err) {
     console.error(err.message);
@@ -40,7 +40,7 @@ router.get('/all', auth, async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const post = await BlogPost.findById(req.params.id);
-    
+
     if (!post) {
       return res.status(404).json({ message: 'Blog post not found' });
     }
@@ -100,7 +100,7 @@ router.put('/:id', [
   }
 
   try {
-    const { title, url, description, publishedAt, isActive } = req.body;
+    const { title, url, description, publishedAt, isActive, isPinned } = req.body;
 
     let post = await BlogPost.findById(req.params.id);
     if (!post) {
@@ -113,6 +113,7 @@ router.put('/:id', [
     if (description !== undefined) post.description = description;
     if (publishedAt) post.publishedAt = publishedAt;
     if (isActive !== undefined) post.isActive = isActive;
+    if (isPinned !== undefined) post.isPinned = isPinned;
 
     await post.save();
     res.json({ message: 'Blog post updated successfully', post });
@@ -131,7 +132,7 @@ router.put('/:id', [
 router.delete('/:id', auth, async (req, res) => {
   try {
     const post = await BlogPost.findById(req.params.id);
-    
+
     if (!post) {
       return res.status(404).json({ message: 'Blog post not found' });
     }

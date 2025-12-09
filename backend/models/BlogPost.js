@@ -22,12 +22,17 @@ const blogPostSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  isPinned: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
 });
 
-// Index for faster queries
+// Indexes for faster queries
 blogPostSchema.index({ publishedAt: -1 });
+blogPostSchema.index({ isPinned: -1, publishedAt: -1 });
 
 module.exports = mongoose.model('BlogPost', blogPostSchema);
